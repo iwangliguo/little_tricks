@@ -1,0 +1,6 @@
+# depslib dependency file v1.0
+1562470305 source:c:\users\administrator\desktop\c\sin_tab\main.c
+	<stdio.h>
+	<stdlib.h>
+	<stdint.h>
+

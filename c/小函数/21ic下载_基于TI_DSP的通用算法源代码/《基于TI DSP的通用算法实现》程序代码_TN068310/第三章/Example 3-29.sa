@@ -1,0 +1,51 @@
+
+; Example 3 - 29. Autoscaling SA Listing of DIT Radix-4 FFT for the TMS320C62x DSP
+
+
+test_bit_growth: .trip 16
+		ldw 	*+p_x[j], tmp
+		norm 	tmp, xtmph 		; test for redundant sign bit of HI half
+		shl 	tmp, 16, xtmpl
+		norm 	xtmpl, xtmpl 		; test for redundant sign bit of LO half
+		cmplt 	xtmph, exp, tmp 	; test if bit grow
+  [tmp]add 	xtmph, 0, exp
+		cmplt 	xtmpl, exp, tmp 	; test if bit grow
+  [tmp]add 	xtmpl, 0, exp
+		cmpgt 	exp, 2, tmp 		; if exp>2 than no scaling
+  [tmp]b 		no_scale
+		cmpeq 	exp, 0, tmp 		; compare if bit grow 3 bits
+  [tmp]sub 	3, exp, t0 		; calculate shift
+  [tmp]mvk 	0x0213, t1 		; csta & cstb to ext xtmpl
+  [tmp]add 	scale, t0, scale	; accumulate scale
+  [tmp]b 		scaling
+		cmpeq 	exp, 1, tmp 		; compare if bit grow 2 bit
+  [tmp]sub 	3, exp, t0
+  [tmp]mvk 	0x0212, t1 		; csta & cstb to ext xtmpl
+  [tmp]add 	scale, t0, scale 	; accumulate scale
+  [tmp]b 		scaling
+		sub 	3, exp, t0 		; grows 1 bit
+		mvk 	0x0211, t1 		; csta & cstb to ext xtmpl
+		add 	scale, t0, scale	; accumulate scale
+		b 		scaling
+no_scale:
+		add 	j, 1, j
+		cmplt 	j, n, tmp 			; compare if test all output
+  [tmp]b 		test_bit_growth 	; if not, test next output
+		b 		next_stage 		; else go to next stage
+scaling:
+		zero 	j
+scaling_loop: .trip 16
+		ldw 	*+p_x[j], tmp
+		shr 	tmp, t0, xtmph 		; scaling HI half
+		and 	xtmph, mskh, xtmph 	; mask HI half
+		ext 	tmp, t1, xtmpl 		; scaling LO half
+		and 	xtmpl, t2, xtmpl 	; mask LO half by 0x0000ffff
+		or 		xtmph, xtmpl, tmp 	; x[j]=[xtmph | xtmpl]
+		stw	 	tmp, *+p_x[j]
+		add 	j, 1, j
+		cmplt 	j, n, tmp
+  [tmp]b 		scaling_loop
+next_stage:
+		shl 	ie, 2, ie
+		shr 	k, 2, k
+		b 		stage_loop 			; end of stage loop

@@ -1,0 +1,50 @@
+
+Example 2 - 9. Double-Precision Floating-Point Division SA Listing for _divd
+
+;================================================================
+; Copyright 1998 by Texas Instruments Inc. All rights reserved.
+
+; DIVDP.sa Syd Poland 06-24-98 for TMS320C67xx DSPs
+; a5:a4 = a5:a4 / b5:b4
+; ans = arg1 / arg2 DP FP divide subroutine
+
+;================================================================
+
+	.text				; program memory
+	.global _DIVDP, __divd		; entry label
+	.align 32			; fetch packet boundary
+
+__divd 					; entry in rts6701 library
+_DIVDP: .cproc arg1H:arg1L, arg2H:arg2L 
+					; entry to DP FP divide subroutine
+					; declare the input arguments
+
+	.reg xH:xL, twoH:twoL, tH:tL, ansH:ansL, V
+				; just declare args, not need to allocate registers
+
+	rcpdp	arg2H:arg2L, xH:xL		; x1 = 1/arg2 [8-bits]
+	extu	arg2H, 1, 21, V			; exp2 = 0 ?
+	zero	twoH				; MS word = 0
+	zero	twoL				; LS word = 0
+
+	mpydp	arg2H:arg2L, xH:xL, tH:tL	; t = arg2*x1
+	set	twoH,30,30,twoH			; DP FP (0x4000_0000)
+	subdp	twoH:twoL, tH:tL, tH:tL		; t = 2.0-(arg2*x1)
+
+	mpydp	xH:xL, tH:tL, xH:xL		; x2 = x1*(2-arg2*x1)
+	mpydp	arg2H:arg2L, xH:xL, tH:tL	; t = arg2*x2
+	subdp	twoH:twoL, tH:tL, tH:tL		; t = 2.0-(arg2*x2)
+
+	mpydp	xH:xL, tH:tL, xH:xL		; x3 = x2*(2-arg2*x2)
+	mpydp	arg2H:arg2L, xH:xL, tH:tL	; t = arg2*x3
+	subdp	twoH:twoL, tH:tL, tH:tL		; t = 2.0 - (arg2*x3)
+
+	mpydp	xH:xL, tH:tL, xH:xL		; x4 = x3*(2-arg2*x3)
+[V]	mpydp	arg1H:arg1L, xH:xL, ansH:ansL 	; ans = arg1*x4
+
+[!V] 	set	arg1H, 0, 30, ansH		; exp/mant = all 1s (div by 0)
+[!V]	or	-1, ansL, ansL			; lower mantissa = all 1s
+
+	.return	ansH:ansL			; return value like c routines
+	.endproc				; not use .end to show the end
+

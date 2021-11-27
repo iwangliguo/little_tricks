@@ -1,0 +1,55 @@
+//--------------------- 
+//作者：MingjaLee 
+//来源：CSDN 
+//原文：https://blog.csdn.net/lijiang1991/article/details/51251634 
+
+#include<stdio.h>
+#include <math.h>
+#include <stdlib.h>
+ 
+const double eps = 1e-11;
+  
+void float2str(char *str,double num)
+{
+     int high;//float_整数部分  
+     double low;//float_小数部分 
+     char *start=str;
+     int n=0;
+     char ch[20];
+     int i;
+     high=(int)num;
+     low=num-high;
+     
+     while(high>0){
+         ch[n++]='0'+high%10;
+         high=high/10;
+     }
+     
+     for(i=n-1;i>=0;i--){
+         *str++=ch[i];
+     }
+     
+     num -= (int)num;
+     double tp = 0.1;
+     *str++='.';
+     
+     while(num > eps){//精度限制 
+         num -= tp * (int)(low * 10);
+         tp /= 10;
+         *str++='0'+(int)(low*10);
+         low=low*10.0-(int)(low*10);
+     }
+     *str='\0';
+     str=start;
+ }
+ 
+ int main()
+ {
+     double a;
+     while( ~scanf("%lf", &a) ) {
+         char str[20];
+         float2str(str,a);
+         printf("%s\n\n",str);    
+     }
+     
+ }

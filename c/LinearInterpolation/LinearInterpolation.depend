@@ -1,0 +1,5 @@
+# depslib dependency file v1.0
+1566652912 source:c:\users\administrator\desktop\c\linearinterpolation\main.c
+	<stdio.h>
+	<stdlib.h>
+

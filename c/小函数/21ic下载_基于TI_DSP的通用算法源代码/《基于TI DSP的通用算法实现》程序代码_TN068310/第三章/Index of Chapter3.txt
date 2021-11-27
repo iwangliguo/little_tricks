@@ -1,0 +1,49 @@
+Example 3 - 1.  Generation of Twiddle Factor for Float-Point Complex Radix-2 FFT C Listing
+Example 3 - 2.  Bit Reversion for Float-Point Complex DIT Radix-2 FFT C Listing
+Example 3 - 3.  Float-Point Complex DIT Radix-2 FFT C Listing	
+Example 3 - 4.  Bit Reversion ASM Listing for TMS320F240	
+Example 3 - 5.  Butterfly Unit ASM Listing for TMS320F240	
+Example 3 - 6.  Combined Stage1 and Stage2 ASM Listing for TMS320F240	
+Example 3 - 7.  Implementing a Spectrum Analyzer Using a 128-Point FFT and the TMS320F240 EVM	
+Example 3 - 8.  Bit Reversion ASM Listing for TMS320C54x	
+Example 3 - 9.  Butterfly Unit ASM Listing for TMS320C54x	
+Example 3 - 10. DIT Radix-2 FFT ASM Listing for TMS320C54x
+Example 3 - 11. Float-Point Complex FFT Implementation Based on BFP Method for TMS320C54x	
+Example 3 - 12. Complex Bit Reversion ASM Listng for the TMS320C54x DSP	
+Example 3 - 13. Complex Butterfly Unit ASM Listng for the TMS320C54x DSP	
+Example 3 - 14. Dat Unpacking ASM Listng for the TMS320C54x DSP
+Example 3 - 15. FFT Implementation of a 2N Real Sequence Based on Data-Packing Method for TMS320C54x	
+Example 3 - 16. DIT Radix-2 FFT Implementation ASM Listing for TMS320C55x	
+Example 3 - 17. Scaling for BFP Based FFT Implementation ASM Listing for TMS320C55x	
+Example 3 - 18. Integer Scaling BFP Based DIT Radix-2 FFT Implementation ASM Listing for TMS320C55x	
+Example 3 - 19. Complex DIF Radix-2 FFT Implementation ASM Listing for TMS320C62x	
+Example 3 - 20. Complex Bit Reversion Implementation ASM Listing for TMS320C62x	
+Example 3 - 21. Split Function C Listing for the FFT of two N-Point Real Sequences	
+Example 3 - 22. Split Function ASM Listing for the FFT of two N-Point Real Sequences for the TMS320C62x DSP	
+Example 3 - 23. Complex Bit Reversion ASM Listing for the TMS320C62x DSP	
+Example 3 - 24. Generation Index Tab C Listing for a Bit Reversion Function	
+Example 3 - 25. Split Function C Listing for the FFT of a 2N-Point Real Sequences	
+Example 3 - 26. Split Function ASM Listing for the FFT of a 2N-Point Real Sequences for the TMS320C62x DSP	
+Example 3 - 27. DIT Radix-4 FFT C Listing	
+Example 3 - 28. Autoscaling DIT Radix-4 FFT with C62x C Intrinsics	
+Example 3 - 29. Autoscaling SA Listing of DIT Radix-4 FFT for the TMS320C62x DSP	
+Example 3 - 30. Autoscaling Based DIT Radix-4 FFT SA Listing for the TMS320C62x DSP	
+Example 3 - 31. Extended Precision Multiplication C Listing Shifting before Addition	
+Example 3 - 32. Extended Precision Multiplication C Listing	
+Example 3 - 33. Extended Precision Multiplication ASM Listing	
+Example 3 - 34. Extended Precision DIT Radix-2 FFT Implementation ASM Listing for the TMS320C62x DSP	
+Example 3 - 35. Extended Precision DIT Radix-4 FFT Implementation ASM Listing for the TMS320C62x DSP	
+Example 3 - 36. DIT Radix-2 FFT Implementation ASM Listing for the TMS320C64x DSP	
+Example 3 - 37. Complex Bit Reversion ASM Listing for the TMS320C3x DSP	
+Example 3 - 38. Butterfly Unit of Radix-2 FFT ASM Listing for the TMS320C3x DSP	
+Example 3 - 39. Real DIT Radix-2 FFT ASM Listing for the TMS320C3x DSP	
+Example 3 - 40. Complex DIT Radix-2 FFT ASM Listing for the TMS320C3x DSP	
+Example 3 - 41. Complex DIT Radix-4 FFT ASM Listing for the TMS320C3x DSP	
+Example 3 - 42. Butterfly Unit of FHT ASM Listing for the TMS320C3x DSP	
+Example 3 - 43. FHT ASM Listing for the TMS320C3x DSP	
+Example 3 - 44. Butterfly Unit of FCT ASM Listing for the TMS320C3x DSP	
+Example 3 - 45. FCT ASM Listing for the TMS320C3x DSP	
+Example 3 - 46. Creation of Cosine TBL of FCT ASM Listing for the TMS320C3x DSP	
+Example 3 - 47. Butterfly Unit of Complex Float Point Radix-2 FFT SA Listing for the TMS320C67x DSP	
+Example 3 - 48. Complex Float Point Radix-2 FFT ASM Listing for the TMS320C67x DSP
+

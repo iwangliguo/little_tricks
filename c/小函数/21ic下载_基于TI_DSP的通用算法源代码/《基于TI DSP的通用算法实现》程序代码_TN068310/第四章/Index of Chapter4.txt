@@ -1,0 +1,19 @@
+Example 4 - 1. Single-Precision Biquad C Listing	
+Example 4 - 2. Fixed Point Biquad ASM Listing for the TMS320C2x DSP	
+Example 4 - 3. IIR Filter Implementation Using Cacade Biquad Structure ASM Listing for the TMS320C24x DSP	
+Example 4 - 4. Biquad IIR Filter ASM Listing for the TMS320C54x DSP	
+Example 4 - 5. Modified Direct-I IIR Filter ASM Listing for the TMS320C54x DSP	
+Example 4 - 6. Implementation of an IIR 32¡Á16-bit Direct Form I for the TMS320C54x DSP	
+Example 4 - 7. Implementation of an IIR 32¡Á16-bit Direct Form II for the TMS320C54x DSP	
+Example 4 - 8. Implementation of an IIR 32¡Á16-bit Canonical Direct Form I for the TMS320C54x DSP	
+Example 4 - 9. Implementation of an IIR 32¡Á32-bit Direct Form I for the TMS320C54x DSP	
+Example 4 - 10. Implementation of an IIR 32¡Á32-bit Direct Form II for the TMS320C54x DSP	
+Example 4 - 11. Implementation of an IIR 32¡Á32-bit Canonical Direct Form I for the TMS320C54x DSP	
+Example 4 - 12. Implementation of an IIR 16¡Á32-bit Direct Form I for the TMS320C54x DSP	
+Example 4 - 13. Biquad IIR Filter ASM Listing for the TMS320C55x DSP	
+Example 4 - 14. Biquad IIR Filter C Listing Using Intrinsic Functions for the TMS320C62x DSP	
+Example 4 - 15. Biquad IIR Filter SA Listing Functions for the TMS320C62x DSP	
+Example 4 - 16. Biquad IIR Filter SA Listing Functions for the TMS320C64x DSP	
+Example 4 - 17. Biquad IIR Filter ASM Listing Functions for the TMS320C3x DSP	
+Example 4 - 18. Biquad IIR Filter SA Listing Functions for the TMS320C67x DSP	
+

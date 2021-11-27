@@ -1,0 +1,17 @@
+   //按键1长短按键触发
+    if(two_sw.key_triggered){
+        if(!GPIOPinRead(GPIO_PORTF_BASE, GPIO_PIN_0))   //处于低电平时计数
+            two_sw.time_cnt++;
+        else{
+            two_sw.key_triggered = 0;
+            //短触发
+            if(two_sw.time_cnt >= two_sw.time_wait_short && two_sw.time_cnt < two_sw.time_wait_long)
+                mea_ctrl.flag = 1;    //说明按键触发，开始计算电容和页数
+            //长触发
+            else if(two_sw.time_cnt >= two_sw.time_wait_long){
+                two_sw.mode = 1 - two_sw.mode;
+                Oled_mode_change();
+            }
+            two_sw.time_cnt = 0;   //清零
+        }
+    }

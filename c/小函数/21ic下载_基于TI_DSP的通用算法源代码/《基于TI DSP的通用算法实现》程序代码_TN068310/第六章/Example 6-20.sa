@@ -1,0 +1,135 @@
+
+;  Example 6 - 20. LMS Implementation SA Listing for the TMS320C64x DSP
+
+* ======================================================================== *
+*  NAME                                                                    *
+*      DSP_firlms2 -- Least Mean Square Adaptive Filter                    *
+*                 Partitioned Serial Assembly Implementation               *
+*                                                                          *
+*  REVISION DATE                                                           *
+*      13-Mar-2002                                                         *
+*                                                                          *
+*  USAGE                                                                   *
+*                                                                          *
+*      This routine has the following C prototype:                         *
+*                                                                          *
+*          long DSP_firlms2                                                *
+*          (                                                               *
+*              short       *restrict h,  // Filter Coefficients            *
+*              const short *restrict x,  // Input Data                     *
+*              short                 b,  // Error from previous FIR        *
+*              int                   nh  // Number of Coefficients         *
+*          )                                                               *
+*                                                                          *
+*      The DSP_firlms2 routine accepts a list of 'nh' input data and 'nh'  *
+*      adaptive filter coefficients and updates the coefficients by        *
+*      adding weighted error times the inputs to the original              *
+*      coefficients. This assumes single sample input followed by the      *
+*      last nh-1 inputs and nh coefficients.                               *
+*                                                                          *
+*  DESCRIPTION                                                             *
+*                                                                          *
+*      The algorithm is simple and Natural C implementation is as follows: *
+*                                                                          *
+*          long DSP_firlms2                                                *
+*          (                                                               *
+*              short       *restrict h,  // Filter Coefficients            *
+*              const short *restrict x,  // Input Data                     *
+*              short                 b,  // Error from previous FIR        *
+*              int                   nh  // Number of Coefficients         *
+*          )                                                               *
+*          {                                                               *
+*              int  i;                                                     *
+*              long r=0;                                                   *
+*                                                                          *
+*              for(i = 0; i < nh; i++)                                     *
+*              {                                                           *
+*                * Update the filter coefficients *                        *
+*                                                                          *
+*                  h[i] += (x[i] * b) >> 15;                               *
+*                                                                          *
+*                * Calculate the filter output    *                        *
+*                                                                          *
+*                  r    += x[i + 1] * h[i];                                *
+*              }                                                           *
+*              return r;                                                   *
+*          }                                                               *
+*                                                                          *
+*  TECHNIQUES                                                              *
+*                                                                          *
+*      - The loop is unrolled 4 times                                      *
+*      - MPY2, PACKH2 and ADD2 are used to update the filter coefficients  *
+*      - DOTP2 is used to calculate filter output                          *
+*                                                                          *
+*  ASSUMPTIONS                                                             *
+*                                                                          *
+*      - Assumes 16-bit input data, error and filter coefficients.         *
+*      - nh > = 4 and is a multiple of 4                                   *
+*                                                                          *
+* ------------------------------------------------------------------------ *
+*             Copyright (c) 2003 Texas Instruments, Incorporated.           *
+*                            All Rights Reserved.                           *
+* ======================================================================== *
+
+
+        .sect ".text:_firlms2"
+        .global _DSP_firlms2
+_DSP_firlms2 .cproc A_hadd, B_inadd, A_err, B_nh
+            .no_mdep
+            .reg    A_inadd, B_err, B_hadd            ; Copy on other side
+            .reg    A_h32:A_h10                       ; Filter Coefficients
+            .reg    B_x32:B_x10, A_x43:A_x21          ; Non-aligned data
+            .reg    B_xb32H:B_xb32L, A_xb10H:A_xb10L  ; MPY2 results
+            .reg    B_xb32, A_xb10                    ; Packed 16-bit result
+            .reg    A_h1h0, B_h3h2:B_h1h0             ; Updated Filter Coeff
+            .reg    A_r1_, B_r2_, A_temp              ; Temporary variables
+            .reg    B_rH:B_rL, A_rH:A_rL              ; Accumulators
+
+            SHR    .2      B_nh,          2,          B_nh
+            MVK    .1      2,             A_temp
+            PACK2  .1      A_err,         A_err,      A_err
+            MV     .2x     A_hadd,        B_hadd
+            SUB    .2      B_nh,          2,          B_nh
+            MV     .2x     A_err,         B_err
+            ADD    .1x     B_inadd,       A_temp,     A_inadd
+            ZERO   .2      B_rH:B_rL
+            ZERO   .1      A_rH:A_rL
+
+loop:       .trip   8
+            LDDW   .D1T1   *A_hadd++,     A_h32:A_h10
+            LDNDW  .D2T2   *B_inadd++,    B_x32:B_x10
+            LDNDW  .D1T1   *A_inadd++,    A_x43:A_x21
+
+            SMPY2  .2      B_err,         B_x32,      B_xb32H:B_xb32L
+            SMPY2  .1      A_err,         B_x10,      A_xb10H:A_xb10L
+
+            PACKH2 .2      B_xb32H,       B_xb32L,    B_xb32
+            PACKH2 .1      A_xb10H,       A_xb10L,    A_xb10
+
+            ADD2   .2x     B_xb32,        A_h32,      B_h3h2
+            ADD2   .1      A_xb10,        A_h10,      A_h1h0
+
+            DOTP2  .1      A_x21,         A_h1h0,     A_r1_
+            DOTP2  .2x     A_x43,         B_h3h2,     B_r2_
+
+            ADD    .2      B_r2_,         B_rH:B_rL,  B_rH:B_rL
+            ADD    .1      A_r1_,         A_rH:A_rL,  A_rH:A_rL
+            MV     .2x     A_h1h0,        B_h1h0
+
+            STDW   .D2T2   B_h3h2:B_h1h0, *B_hadd++
+
+            BDEC   .S2     loop,          B_nh
+
+            ADDU   .1x     B_rL,          A_rH:A_rL,  A_rH:A_rL
+            ADD    .1x     B_rH,          A_rH,       A_rH
+
+            .return        A_rH:A_rL
+
+            .endproc
+
+* ======================================================================== *
+*   End of file:  dsp_firlms2.sa                                           *
+* ------------------------------------------------------------------------ *
+*             Copyright (c) 2003 Texas Instruments, Incorporated.           *
+*                            All Rights Reserved.                           *
+* ======================================================================== *

@@ -1,0 +1,152 @@
+
+; Example 3 - 30. Autoscaling Based DIT Radix-4 FFT SA Listing for the TMS320C62x DSP
+
+	.title ¡±r4_fft.sa¡±
+	.def _r4_fft
+	.text
+_r4_fft .cproc n, p_x, p_w
+	.reg n1, n2, ie, ia1, ia2, ia3, i0, i1, i2, i3, j, k;
+	.reg t0, t1, t2, w, x0, x1, x2, x3;
+	.reg tmp, mskh, xtmph, xtmpl;
+	.reg exp, scale;
+	
+	add n, 0, n2
+	mvk 1, ie
+	zero mskh
+	mvkh 0xffff0000, mskh
+	zero scale
+	add n, 0, k
+stage_loop:
+	add n2, 0, n1
+	shr n2, 2, n2
+	zero ia1
+	zero j
+group_loop:
+
+
+	add ia1, ia1, ia2
+	add ia2, ia1, ia3
+	add j, 0, i0
+butterfly_loop:
+	add i0, n2, i1
+	add i1, n2, i2
+	add i2, n2, i3
+	ldw *+p_x[i0], x0
+	ldw *+p_x[i1], x1
+	ldw *+p_x[i2], x2
+	ldw *+p_x[i3], x3
+	add2 x1, x3, t0
+	add2 x0, x2, t1
+	sub2 x0, x2, t2
+	add2 t0, t1, x0 	; x0
+	sub2 t1, t0, t1
+	ldw *+p_w[ia2], w 	; load twiddle factor w2
+	smpyh t1, w, tmp
+	smpy t1, w, xtmph
+	sub tmp, xtmph, xtmph
+	and xtmph, mskh, xtmph
+	smpylh t1, w, tmp
+	smpyhl t1, w, xtmpl
+	add tmp, xtmpl, xtmpl
+	shru xtmpl, 16, xtmpl
+	or xtmph, xtmpl, x2 	; x2
+	sub2 x1, x3, t0
+	shl t0, 16, t1
+	neg t1, t1
+	extu t0, 0 ,16, t0
+	or t1, t0, t0
+	add2 t2, t0, t1
+	sub2 t2, t0, t2
+	ldw *+p_w[ia1], w 	; load twiddle factor w1
+	smpyh t1, w, tmp
+	spy t1, w, xtmph
+	sb tmp, xtmph, xtmph
+	ad xtmph, mskh, xtmph
+	spylh t1, w, tmp
+	spyhl t1, w, xtmpl
+	add tmp, xtmpl, xtmpl
+	shru xtmpl, 16, xtmpl
+	or xtmph, xtmpl, x1 	; x1
+	ldw *+p_w[ia3], w 	; load twiddle factor w2
+	smpyh t2, w, tmp
+	smpy t2, w, xtmph
+	sub tmp, xtmph, xtmph
+	and xtmph, mskh, xtmph
+	smpylh t2, w, tmp
+	smpyhl t2, w, xtmpl
+	add tmp, xtmpl, xtmpl
+	shru xtmpl, 16, xtmpl
+	or xtmph, xtmpl, x3 	; x3
+	stw x0, *+p_x[i0]
+	stw x1, *+p_x[i1]
+	stw x2, *+p_x[i2]
+	stw x3, *+p_x[i3]
+	add i0, n1, i0
+	cmplt i0, n, tmp
+	[tmp]b butterfly_loop 	; branch to butterfly loop
+	add ia1, ie, ia1
+	add j, 1, j
+	cmplt j, n2, tmp
+	[tmp]b group_loop 	; branch to group loop
+	cmpeq k, 4, tmp 	; test if last stage
+	[tmp]b end 		; if true, branch to end
+	mvk 2, exp 		; initialize exponent
+	zero j 			; initialize index
+	mvkl 0x0000ffff, t2 	; mask for masking xtmpl
+	mvkh 0x0000ffff, t2
+
+test_bit_growth: .trip 16
+	ldw *+p_x[j], tmp
+	norm tmp, xtmph 	; test for redundant sign bit of HI half
+	shl tmp, 16, xtmpl
+	norm xtmpl, xtmpl 	; test for redundant sign bit of LO half
+	cmplt xtmph, exp, tmp 	; test if bit grow
+	[tmp]add xtmph, 0, exp
+	cmplt xtmpl, exp, tmp 	; test if bit grow
+	[tmp]add xtmpl, 0, exp
+	cmpgt exp, 2, tmp 	; if exp>2 than no scaling
+	[tmp]b no_scale
+	cmpeq exp, 0, tmp 	; compare if bit grow 3 bits
+	[tmp]sub 3, exp, t0 	; calculate shift
+	[tmp]mvk 0x0213, t1 		; csta & cstb to ext xtmpl
+	[tmp]add scale, t0, scale 	; accumulate scale
+	[tmp]b scaling
+	cmpeq exp, 1, tmp 		; compare if bit grow 2 bit
+	[tmp]sub 3, exp, t0
+	[tmp]mvk 0x0212, t1 		; csta & cstb to ext xtmpl
+	[tmp]add scale, t0, scale 	; accumulate scale
+	[tmp]b scaling
+	sub 3, exp, t0 			; grows 1 bit
+	mvk 0x0211, t1 			; csta & cstb to ext xtmpl
+	add scale, t0, scale 		; accumulate scale
+	b scaling
+no_scale:
+	add j, 1, j
+	cmplt j, n, tmp 		; compare if test all output
+	[tmp]b test_bit_growth 		; if not, test next output
+	b next_stage			; else go to next stage
+	
+
+scaling:
+	zero j
+	scaling_loop: .trip 16
+	ldw *+p_x[j], tmp
+	shr tmp, t0, xtmph 		; scaling HI half
+	and xtmph, mskh, xtmph 		; mask HI half
+	ext tmp, t1, xtmpl 		; scaling LO half
+	and xtmpl, t2, xtmpl 		; mask LO half by 0x0000ffff
+	or xtmph, xtmpl, tmp 		; x[j]=[xtmph | xtmpl]
+	stw tmp, *+p_x[j]
+	add j, 1, j
+	cmplt j, n, tmp
+	[tmp]b scaling_loop
+next_stage:
+	shl ie, 2, ie
+	shr k, 2, k
+	b stage_loop 			; end of stage loop
+end:
+	.return scale
+	.endproc
+	
+	
+	

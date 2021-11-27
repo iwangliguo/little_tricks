@@ -1,0 +1,296 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=GBK">
+<title>Digital Signal Processing</title>
+<meta name="author" content="Exstrom Laboratories LLC">
+<meta name="copyright" content="Exstrom Laboratories LLC">
+<meta name="description" content="Digital Signal Processing">
+<meta name="keywords" content="digital signal processing, fourier series,
+fourier transform, DFT, discrete fourier transform, FFT, fast fourier
+transform, digital filter, digital butterworth filter, DSP">
+
+<link rel="stylesheet" type="text/css" href="Digital%20Signal%20Processing_files/css.css">
+<link rel="stylesheet" type="text/css" href="Digital%20Signal%20Processing_files/content.css">
+
+<script type="text/javascript" async="" src="Digital%20Signal%20Processing_files/ga.js"></script><script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-20101722-1']);
+  _gaq.push(['_trackPageview']);
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+</head>
+
+<body>
+
+<div id="header">
+<h1 align="center">Digital Signal Processing</h1>
+</div>
+
+<div class="clearfloats"></div>
+
+<div id="body">
+
+<div id="nav">
+<a class="nav" href="http://www.exstrom.com/index.html">Exstrom Labs</a><br>
+<font size="1">
+Copyright 2005-2019<br>
+Exstrom Laboratories LLC<br>
+Longmont, Colorado 80503<br>
+</font>
+</div>
+
+<div id="contents">
+<p><b>Please consider supporting further development of this software by buying our book:</b></p>
+<p><a href="http://www.abrazol.com/books/filter1/">Recursive Digital Filters: A Concise Guide</a></p>
+<p><a href="http://www.abrazol.com/books/filter1/"><img src="Digital%20Signal%20Processing_files/cover_thumb.png" alt="Cover for Recursive Digital Filters" style="margin-right:20px" align="left"></a>
+The book provides a quick introduction to recursive digital
+filters. The goal is to get the reader to the point where he can
+understand and use these filters as quickly as possible. The amount of
+mathematical background material is kept to a minimum and many examples are included.<br>
+<a href="http://www.abrazol.com/books/filter1/">More information ...</a></p>
+
+<p style="clear: both; padding-top: 20px;">
+All the software on this page is free and distributed under the terms of the
+<a href="http://www.gnu.org/copyleft/gpl.html">GNU General Public License</a>.
+It is written in ANSI C and should compile with any C compiler.</p>
+<p>Contact:
+<a href="http://www.exstrom.com/stefan/stefan.html">Stefan</a> or
+<a href="http://www.exstrom.com/richard/richard.html">Richard</a>
+</p>
+
+<p><a href="http://www.exstrom.com/siggen/">Digital signal generation software can be found
+here.</a></p>
+
+<h2>Butterworth and Chebyshev Filters</h2>
+<p>The following are command line filter programs. They read data
+from stdin and write to stdout. Both input and output streams are in
+ascii format.</p>
+
+<ul>
+
+<li><a href="http://www.exstrom.com/journal/sigproc/bwlpf.c">bwlpf.c</a> - 2, 4, 6,... order lowpass filter.
+<pre>Usage: bwlpf n s f
+Butterworth lowpass filter.
+  n = filter order 2,4,6,...
+  s = sampling frequency
+  f = half power frequency
+</pre>
+<img style="align:bottom;border:1px solid black;padding:10px;margin-bottom:20px;" src="Digital%20Signal%20Processing_files/bwlpf_fr.svg" alt="Frequency response of Butterworth low pass filters, order=2,4,8.">
+</li>
+
+<li><a href="http://www.exstrom.com/journal/sigproc/cheblpf.c">cheblpf.c</a> - 2, 4, 6,... order lowpass filter.
+<pre>Usage: cheblpf n e s f
+Chebyshev lowpass filter.
+  n = filter order 2,4,6,...
+  e = epsilon [0,1]
+  s = sampling frequency
+  f = cutoff frequency
+</pre>
+<img style="align:bottom;border:1px solid black;padding:10px;margin-bottom:20px" src="Digital%20Signal%20Processing_files/cheblpf_fr.svg" alt="Frequency response of Chebyshev low pass filters, order=10.">
+</li>
+
+<li><a href="http://www.exstrom.com/journal/sigproc/bwhpf.c">bwhpf.c</a> - 2, 4, 6,... order highpass filter.
+<pre>Usage: bwhpf n s f
+Butterworth highpass filter.
+  n = filter order 2,4,6,...
+  s = sampling frequency
+  f = half power frequency
+</pre>
+<img style="align:bottom;border:1px solid black;padding:10px;margin-bottom:20px" src="Digital%20Signal%20Processing_files/bwhpf_fr.svg" alt="Frequency response of Butterworth high pass filters, order=2,4,8.">
+</li>
+
+<li><a href="http://www.exstrom.com/journal/sigproc/chebhpf.c">chebhpf.c</a> - 2, 4, 6,... order highpass filter.
+<pre>Usage: chebhpf n e s f
+Chebyshev highpass filter.
+  n = filter order 2,4,6,...
+  e = epsilon [0,1]
+  s = sampling frequency
+  f = cutoff frequency
+</pre>
+<img style="align:bottom;border:1px solid black;padding:10px;margin-bottom:20px" src="Digital%20Signal%20Processing_files/chebhpf_fr.svg" alt="Frequency response of Chebyshev high pass filters, order=10.">
+</li>
+
+<li><a href="http://www.exstrom.com/journal/sigproc/bwbpf.c">bwbpf.c</a> - 4, 8, 12,... order bandpass filter.
+<pre>Usage: bwbpf n s f1 f2
+Butterworth bandpass filter.
+  n = filter order 4,8,12,...
+  s = sampling frequency
+  f1 = upper half power frequency
+  f2 = lower half power frequency
+</pre>
+<img style="align:bottom;border:1px solid black;padding:10px;margin-bottom:20px" src="Digital%20Signal%20Processing_files/bwbpf_fr.svg" alt="Frequency response of Butterworth band pass filters, order=4,8,16."></li>
+
+<li><a href="http://www.exstrom.com/journal/sigproc/chebbpf.c">chebbpf.c</a> - 4, 8, 12,... order bandpass filter.
+<pre>Usage: chebbpf n e s f1 f2
+Chebyshev bandpass filter.
+  n = filter order 4,8,12,...
+  e = epsilon [0,1]
+  s = sampling frequency
+  f1 = upper half power frequency
+  f2 = lower half power frequency
+</pre>
+<img style="align:bottom;border:1px solid black;padding:10px;margin-bottom:20px" src="Digital%20Signal%20Processing_files/chebbpf_fr.svg" alt="Frequency response of Chebyshev band pass filters, order=8."></li>
+
+<li><a href="http://www.exstrom.com/journal/sigproc/bwbsf.c">bwbsf.c</a> - 4, 8, 12,... order bandstop filter.
+<pre>Usage: bwbsf n s f1 f2
+Butterworth bandstop filter.
+  n = filter order 4,8,12,...
+  s = sampling frequency
+  f1 = upper half power frequency
+  f2 = lower half power frequency
+</pre>
+<img style="align:bottom;border:1px solid black;padding:10px;margin-bottom:20px" src="Digital%20Signal%20Processing_files/bwbsf_fr.svg" alt="Frequency response of Butterworth band stop filters, order=4,8,16."></li>
+
+<li><a href="http://www.exstrom.com/journal/sigproc/chebbsf.c">chebbsf.c</a> - 4, 8, 12,... order bandstop filter.
+<pre>Usage: chebbsf n e s f1 f2
+Chebyshev bandstop filter.
+  n = filter order 4,8,12,...
+  e = epsilon [0,1]
+  s = sampling frequency
+  f1 = upper half power frequency
+  f2 = lower half power frequency
+</pre>
+<img style="align:bottom;border:1px solid black;padding:10px;margin-bottom:20px" src="Digital%20Signal%20Processing_files/chebbsf_fr.svg" alt="Frequency response of Chebyshev band stop filter, order=8."></li>
+
+</ul>
+
+<h2>Butterworth Filter Coefficients</h2>
+
+<p>The following files are for a library of functions to calculate
+Butterworth filter coefficients. There are functions for lowpass,
+bandpass, highpass, and bandstop filters. If you just want an
+efficient implementation of these filters then see the programs
+listed above.</p>
+
+<ul>
+<li><a href="http://www.exstrom.com/journal/sigproc/liir.c">liir.c</a> - source code</li>
+<li><a href="http://www.exstrom.com/journal/sigproc/iir.h">iir.h</a> - header file</li>
+<li><a href="http://www.exstrom.com/journal/sigproc/iir.txt">iir.txt</a> - documentation</li>
+</ul>
+
+<p>The following are example programs that use liir.c.</p>
+
+<ul>
+<li><a href="http://www.exstrom.com/journal/sigproc/bwlp.c">bwlp.c</a> - lowpass filter coefficient calculator.</li>
+<li><a href="http://www.exstrom.com/journal/sigproc/bwhp.c">bwhp.c</a> - highpass filter coefficient calculator.</li>
+<li><a href="http://www.exstrom.com/journal/sigproc/bwbp.c">bwbp.c</a> - bandpass filter coefficient calculator.</li>
+<li><a href="http://www.exstrom.com/journal/sigproc/bwbs.c">bwbs.c</a> - bandstop filter coefficient calculator.</li>
+<li><a href="http://www.exstrom.com/journal/sigproc/Makefile">Makefile</a> - creates libiir.a and compiles example programs.</li>
+</ul>
+
+<p>The example programs take the order of the filter and the cutoff
+frequencies as command line input parameters.  Run the programs with no
+parameters to get a usage message showing how to list the parameters. The
+output is a file that lists the <code>c</code> and <code>d</code> coefficients
+of the filter (see the documentation in iir.txt for an explaination of what this
+means)</p>
+
+<p><strong>Calculating cutoff frequencies:</strong> The cutoff frequencies are
+specified as a fraction of π. If <code>f<sub>s</sub></code> is the frequency
+at which the data is sampled (samples per second) and <code>f</code> is the
+cutoff frequency you want, then the parameter you would input to the program
+is <code>2*f/f<sub>s</sub></code>. For example if your data is sampled at 5000
+samples/sec and you want a bandpass filter from 500 to 1000 Hz the lower
+cutoff would be 2*500/5000=0.2 and the upper cutoff would be
+2*1000/5000=0.4. Here's a calculator that will calculate this for you.</p>
+
+<form name="dfcalc">
+  <table>
+    <tbody><tr>
+      <td>Samples/second:</td>
+      <td><input type="text" name="sps" size="12"></td>
+      <td>Cutoff freq. (Hz):</td>
+      <td><input type="text" name="fc" size="12"></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><input type="button" size="12" value="Calculate" onclick="cf();"></td>
+      <td>Digital cutoff:</td>
+      <td><input type="text" name="dfc" size="12" ;=""></td>
+    </tr>
+  </tbody></table>
+</form>
+
+<script language="JavaScript">
+function cf()
+{
+    var fc = document.dfcalc.fc.value;
+    var sps = document.dfcalc.sps.value;
+    var dfc = 2 * fc / sps;
+    document.dfcalc.dfc.value = dfc.toFixed(8);
+}
+</script>
+
+<p><strong>Other recursive filter programs:</strong><br>
+<a href="http://www.exstrom.com/journal/sigproc/rffr.c">rffr.c</a> - Calculates the frequency response of a recursive
+filter using the coefficient file created by one of the above programs.<br>
+<a href="http://www.exstrom.com/journal/sigproc/rdf.c">rdf.c</a> - Filters data from an input file, using a
+coefficient file generated by one of the above programs.<br>
+</p>
+
+<h2>FIR Nonrecursive Digital Filters</h2>
+
+<p>A general nonrecursive filter is implemented as follows:</p>
+
+<p><code>y[n] = c<sub>0</sub>*x[n] + c<sub>1</sub>*x[n-1] + ... + c<sub>M</sub>*x[n-M]</code></p>
+
+<p>The n<sup>th</sup> output is a linear function of the n<sup>th</sup> input
+and the previous M inputs. The c<sub>k</sub> coefficients are calculated to
+give the filter a specific frequency response.</p>
+
+<p>The three programs listed below calculate the c<sub>k</sub> coefficients for
+implementing a lowpass, bandpass, and highpass filter. The filters are simple
+(no smoothing) approximations to ideal filters, and have linear phase. The
+programs take command line input parameters. The parameters are the number of
+coefficients and the cutoff frequencies. The more coefficients, the sharper
+the cutoff. The cutoff frequencies are specified as a fraction of Pi. See the
+discussion under "Recursive Digital Filters" for how to calculate the cutoff
+frequencies. An additional parameter is the number of zeros to pad on to the
+end of the coefficient list. This is useful if you want to take the FFT of the
+coefficients in order to apply the filter in the frequency domain, or if you
+just want to see what the frequency response of the filter is. You can set
+this parameter to zero. Running the programs with no parameters will print out
+a usage message showing the correct order in which the parameters should be
+given.</p>
+
+<p>
+<a href="http://www.exstrom.com/journal/sigproc/tdlpf.c">tdlpf.c</a> - Calculates lowpass filter coefficients.<br>
+<a href="http://www.exstrom.com/journal/sigproc/tdbpf.c">tdbpf.c</a> - Calculates bandpass filter coefficients.<br>
+<a href="http://www.exstrom.com/journal/sigproc/tdhpf.c">tdhpf.c</a> - Calculates highpass filter coefficients.<br>
+</p>
+
+<h2>Spectral Analysis</h2>
+
+<p>
+<a href="http://www.exstrom.com/journal/sigproc/goertzel.c">goertzel.c</a>
+ - A program for doing spectrum calculations using the Goertzel 
+algorithm. It allows spectrum calculation at arbitrary points, whereas 
+the FFT calculates the spectrum at evenly spaced points.<br><br>
+<a href="http://www.exstrom.com/journal/sigproc/fft.c">fft.c</a> - FFT 
+program. Takes the FFT of a data (time domain) file, and outputs to file
+ the complex FFT data. The input file needs to be a text (ascii) file. 
+All lines at the top of the input file that start with # are ignored. 
+One data point per line is assumed.<br><br>
+<a href="http://www.exstrom.com/journal/sigproc/extract.c">extract.c</a> - Extracts the real or imaginary parts or the magnitude or the phase of an FFT file that was created by the program fft.<br>
+</p>
+
+<h2>Articles and Notes</h2>
+
+<p>
+<a href="http://www.exstrom.com/journal/sigproc/srdf.pdf">A Simple Recursive Digital Filter</a> (pdf, 7 pages, 132 KB, Oct 3 2006)<br>
+<a href="http://www.exstrom.com/journal/sigproc/spectrum.pdf">Calculating the Frequency Spectrum of a Signal</a> (pdf, 10 pages, 157 KB)<br>
+<a href="http://www.exstrom.com/journal/sigproc/ftsampled.pdf">Fourier Transform of a Sampled Signal</a> (pdf, 5 pages, 93 KB)<br>
+<a href="http://www.exstrom.com/journal/sigproc/specmag.pdf">Spectrum Magnification: When An FFT Is Not Enough</a> (pdf, 9 pages, 147 KB)<br>
+<a href="http://www.exstrom.com/journal/sigproc/fsexp.pdf">Fourier Series Expansion of Functions in Two or More Dimensions</a> (pdf, 3 pages, 79 KB)<br>
+<a href="http://www.exstrom.com/journal/sigproc/chebident.pdf">Chebyshev Polynomials</a> (pdf, 6 pages, 154 KB)<br>
+</p>
+</div>
+</div>
+
+
+
+</body></html>

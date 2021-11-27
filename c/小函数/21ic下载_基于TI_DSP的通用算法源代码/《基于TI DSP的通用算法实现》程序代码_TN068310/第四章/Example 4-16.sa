@@ -1,0 +1,237 @@
+
+; Example 4 - 16. Biquad IIR Filter SA Listing Functions for the TMS320C64x DSP
+
+* ========================================================================= *
+*   TEXAS INSTRUMENTS, INC.                                                 *
+*                                                                           *
+*   NAME                                                                    *
+*       iir -- Infinite Impulse Response Filter/ ARMA filter,               *
+*                                                                           *
+*   REVISION DATE                                                           *
+*       29-Mar-2002                                                         *
+*                                                                           *
+*   USAGE                                                                   *
+*       This routine is C callable and can be called as:                    *
+*                                                                           *
+*       void DSP_iir                                                        *
+*       (                                                                   *
+*           short *restrict r1,                                             *
+*           const short *x,                                                 *
+*           short *restrict r2,                                             *
+*           const short *h2,                                                *
+*           const short *h1,                                                *
+*           int nr                                                          *
+*       )                                                                   *
+*                                                                           *
+*       r1[nr+4] : Output array (used).                                     *
+*       x[nr+4]  : Input array.                                             *
+*       r2[nr]   : Output array (stored).                                   *
+*       h1[5]    : 4 Autoregressive filter coefficients (h1[0] is not used) *
+*       h2[5]    : 5 Moving-average filter coefficients.                    *
+*       nr       : Number of output samples. Must be >= 8.                  *
+*                                                                           *
+*   DESCRIPTION                                                             *
+*       The IIR performs an auto-regressive moving-average (ARMA) filter    *
+*       with 4 auto-regressive filter coefficients and 5 moving-average     *
+*       filter coefficients for nr output samples. The output vector is     *
+*       stored in two locations.  This routine is used as a high pass       *
+*       filter in the VSELP vocoder.                                        *
+*                                                                           *
+*   C CODE                                                                  *
+*       void iir(short *restrict r1, const short *x, short *restrict r2,    *
+*                const short *h2, const short *h1, int nr)                  *
+*       {                                                                   *
+*           int j,i;                                                        *
+*           int sum;                                                        *
+*                                                                           *
+*           for (i=0; i<nr; i++)                                            *
+*           {                                                               *
+*               sum = h2[0] * x[4+i];                                       *
+*                  for (j = 1; j <= 4; j++)                                 *
+*                   sum += h2[j]*x[4+i-j] - h1[j]*r1[4+i-j];                *
+*               r1[4+i] = (sum >> 15);                                      *
+*               r2[i] = r1[4+i];                                            *
+*           }                                                               *
+*       }                                                                   *
+*                                                                           *
+*   TECHNIQUES                                                              *
+*       Reads to the output array to get the previous output samples        *
+*       for AR filtering are avoided by maintaining copies of the           *
+*       samples in the register file.  The accumulator for the "AR"         *
+*       part and the "FIR" part are de-coupled to break data                *
+*       dependencies.  Inner loop that iterates through the filter          *
+*       coefficients is completely unrolled.                                *
+*                                                                           *
+*       C64x multiply instructions such as DOTP2 are used for the FIR       *
+*       portion of the computation, and the lower latency MPY               *
+*       instructions are used for the IIR portion.                          *
+*                                                                           *
+*   ASSUMPTIONS                                                             *
+*       "nr" is greater than or equal to 8.                                 *
+*                                                                           *
+*       Input data array "x" contains "nr + 4" input samples to produce     *
+*       "nr" output samples.                                                *
+*                                                                           *
+*       Output array "r1" contains "nr + 4" locations, "r2" contains        *
+*       "nr" locations for storing "nr" output samples. The output          *
+*       samples are stored with an offset of 4 into the "r1" array.         *
+*                                                                           *
+* ------------------------------------------------------------------------- *
+*             Copyright (c) 2003 Texas Instruments, Incorporated.           *
+*                            All Rights Reserved.                           *
+* ========================================================================= *
+
+
+        .sect ".text:_iir_DSPLIB"
+        .global _DSP_iir
+_DSP_iir:  .cproc  A_r1,  B_x,  A_r2,  B_h2,  A_h1,  B_nr
+                 .no_mdep
+
+          .reg      B_h20,        B_h24_h23:B_h22_h21
+          .reg      A_h24_h23,    B_h1
+          .reg      B_h11,        A_h12
+          .reg      A_h13,        B_h14
+          .reg      B_h12,        A_h14
+          .reg      A_i,          A_x
+          .reg      B_r2_ptr,     B_r1_ptr
+          .reg      B_sum0_s,     B_sum1_s
+          .reg      A_sum2_s,     A_sum3_s
+          .reg      B_r1
+          .reg      A_h23_h24
+          .reg      A_h21_h22
+
+          ; Variables within the loop
+
+          .reg     B_x4,          A_x32:A_x10
+          .reg     A_prod0,       A_prod1
+          .reg     B_prod2,       A_prod3
+          .reg     B_sum0,        B_mpy0
+          .reg     B_mpy1,        A_mpy2
+          .reg     A_mpy3,        A_add1
+          .reg     B_sumA,        B_sumB
+          .reg     B_sumC,        B_h21_h22
+
+          ;--------------------------------------------------------------;
+          ; Pre-read the filter coefficients for the FIR part, as        ;
+          ; packed coeffients so that _dotp2 can be used.                ;
+          ;--------------------------------------------------------------;
+
+          LDH.D2T2   *B_h2[0],      B_h20
+          LDNDW.D2T2 *+B_h2(2),     B_h24_h23:B_h22_h21
+          MV.1x       B_h24_h23,    A_h24_h23
+
+          PACKLH2.1   A_h24_h23,    A_h24_h23,      A_h23_h24
+          PACKLH2.2   B_h22_h21,    B_h22_h21,      B_h21_h22
+          MV     .1x  B_h21_h22,    A_h21_h22
+
+          ;--------------------------------------------------------------;
+          ; Set up twin pointers to the "h1" array and read the filter   ;
+          ; coefficients as half words so that _mpy's can be used.       ;
+          ;--------------------------------------------------------------;
+
+          ADD.1       A_h1,          2,              A_h1
+          ADD.2x      A_h1,          2,              B_h1
+
+          LDH.D1T2    *A_h1++[2],    B_h11
+          LDH.D2T1    *B_h1++[2],    A_h12
+          LDH.D1T1    *A_h1++[2],    A_h13
+          LDH.D2T2    *B_h1++[2],    B_h14
+
+          ;--------------------------------------------------------------;
+          ; Negate all these coefficients so that all accumulates can    ;
+          ; be performed as add's.                                       ;
+          ;--------------------------------------------------------------;
+
+          NEG.2      B_h11,         B_h11
+          NEG.2x     A_h12,         B_h12
+          NEG.1      A_h13,         A_h13
+          NEG.1x     B_h14,         A_h14
+
+          ;--------------------------------------------------------------;
+          ; Decrement 2 from the loop trip counter as "BDEC" is being    ;
+          ; used. In addition set up pointers to "r1" and "r2" arrays.   ;
+          ;--------------------------------------------------------------;
+
+          SUB.1x     B_nr,          2,              A_i
+          MV.1x      B_x,           A_x
+          MV.2x      A_r2,          B_r2_ptr
+          ADD.2x     A_r1,          8,              B_r1_ptr
+
+          MV.2x      A_r1,          B_r1
+          LDH.D1T2   *A_r1[3],      B_sum0_s
+          LDH.D1T2   *A_r1[2],      B_sum1_s
+          LDH.D2T1   *B_r1[1],      A_sum2_s
+          LDH.D2T1   *B_r1[0],      A_sum3_s
+
+          .mptr      A_x,          A_x+0,   2
+          .mptr      B_r1_ptr,     A_x+0,   2
+          .mptr      B_r2_ptr,     A_x+0,   2
+LOOP:     .trip      8
+
+          ;-------------------------------------------------------------;
+          ; Load the five input data samples, using one load half word  ;
+          ; and a non-aligned load double word. The data pointer incr-  ;
+          ; ements by 1 half-word or 2 bytes with every iteration.      ;
+          ;-------------------------------------------------------------;
+
+          LDH.D1T2   *+A_x[4],     B_x4
+          LDNDW.D1T1 *A_x++(2),    A_x32:A_x10
+
+          ;-------------------------------------------------------------;
+          ; Perform FIR part of the ARMA filter, using DOTP2's. Use     ;
+          ; seperate accumualtor for the FIR and AR parts.              ;
+          ;-------------------------------------------------------------;
+
+          DOTP2.1    A_x10,        A_h23_h24,       A_prod0
+          DOTP2.1    A_x32,        A_h21_h22,       A_prod1
+          MPY.2      B_x4,         B_h20,           B_prod2
+
+          ADD.1      A_prod1,      A_prod0,         A_prod3
+          ADD.2x     A_prod3,      B_prod2,         B_sum0
+
+          ;-------------------------------------------------------------;
+          ; Perform AR part of the filter using normal MPY's because    ;
+          ; of the loop carried dependencies. Latency of the multiply   ;
+          ; instruction is critical as it is on the critical path.      ;
+          ;-------------------------------------------------------------;
+
+          MPY.2      B_sum0_s,     B_h11,           B_mpy0
+          MPY.2      B_sum1_s,     B_h12,           B_mpy1
+          MPY.1      A_sum2_s,     A_h13,           A_mpy2
+          MPY.1      A_sum3_s,     A_h14,           A_mpy3
+
+          ADD.1      A_mpy2,       A_mpy3,          A_add1
+          ADD.2x     B_mpy1,       A_add1,          B_sumA
+          ADD.2      B_sumA,       B_sum0,          B_sumB
+
+          ;-------------------------------------------------------------;
+          ; Combine results of the FIR and AR part of the filter eq-    ;
+          ; uations. Maintain past outputs in rotating register file    ;
+          ; Shift present output by 15, and then store out to the       ;
+          ; output arrays.                                              ;
+          ;-------------------------------------------------------------;
+
+          ADD.2      B_sumB,       B_mpy0,          B_sumC
+
+          MV.1       A_sum2_s,     A_sum3_s
+          MV.2x      B_sum1_s,     A_sum2_s
+          MV.2       B_sum0_s,     B_sum1_s
+          EXT.2      B_sumC,       1, 16,           B_sum0_s
+
+          STH.D2T2   B_sum0_s,     *B_r1_ptr++
+          STH.D2T2   B_sum0_s,     *B_r2_ptr++
+
+          ;-------------------------------------------------------------;
+          ; Decrement and branch back to the loop.                      ;
+          ;-------------------------------------------------------------;
+
+          BDEC.1     LOOP,         A_i
+
+         .endproc
+
+* ========================================================================= *
+*   End of file:  dsp_iir.sa                                                *
+* ------------------------------------------------------------------------- *
+*             Copyright (c) 2003 Texas Instruments, Incorporated.           *
+*                            All Rights Reserved.                           *
+* ========================================================================= *

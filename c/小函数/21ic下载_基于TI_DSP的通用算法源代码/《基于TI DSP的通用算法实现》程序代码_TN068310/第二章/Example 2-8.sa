@@ -1,0 +1,40 @@
+
+;Example 2 - 8. Single-Precision Floating-Point Division SA Listing for _divf
+
+;================================================================
+; Copyright 1998 by Texas Instruments Inc. All rights reserved.
+
+; DIVSP.sa Syd Poland 05-01-98 for TMS320C67xx DSPs
+; a4 = a4/b4
+; ans = arg1/arg2 SP FP divide subroutine
+
+;================================================================
+
+	.text				; program memory
+	.global _DIVSP,	__divf		; entry labels
+	.align 32		 	; fetch packet boundary
+
+__divf						; entry in rts6701 library
+_DIVSP: .cproc arg1, arg2			; entry to SP FP divide subroutine
+
+					; declare the input arguments
+	.reg xn, two, tmp, ans, V	; just declare args, not need to allocate registers
+
+	rcpsp	arg2, xn			; x1 = 1/arg2 [8-bits]
+	extu	arg2, 1, 24, V	; exp2 = 0 ?
+	zero	two					; LS halfword = 0
+	mpysp	arg2, xn, tmp		; tmp = arg2*x1
+	set	two, 30, 30, two	
+					; two = 2.0 in SP FP (0x4000_0000)
+	subsp	two, tmp, tmp		; tmp = 2.0-(arg2*x1)
+	mpysp	xn, tmp, xn		; x2 = x1*(2-arg2*x1) [16-bits]
+	mpysp	arg2, xn, tmp		; tmp = arg2*x2
+	subsp	two, tmp, tmp		; tmp = 2.0-(arg2*x2)
+	mpysp	xn, tmp, xn		; x3 = x2*(2-arg2*x2) [32-bits]
+[V]	mpysp	arg1, xn, ans		
+					; ans = arg1*(1/arg2) {xn = 1/arg2}
+[!V]	set	arg1, 0, 30, ans	
+					; return exp/mant = all ones (div by 0)
+	.return	ans			; return value like c routines
+	.endproc			; not use .end to show the end
+;

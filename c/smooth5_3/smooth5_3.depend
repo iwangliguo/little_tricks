@@ -1,0 +1,6 @@
+# depslib dependency file v1.0
+1567609608 source:c:\users\administrator\desktop\c\smooth5_3\main.c
+	"math.h"
+	"stdio.h"
+	"stdlib.h"
+

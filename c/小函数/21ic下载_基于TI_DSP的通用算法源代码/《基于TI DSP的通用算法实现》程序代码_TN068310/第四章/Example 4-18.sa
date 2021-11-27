@@ -1,0 +1,170 @@
+
+; Example 4 - 18. Biquad IIR Filter SA Listing Functions for the TMS320C67x DSP
+
+* ====================================================================== *
+*  TEXAS INSTRUMENTS, INC.                                               *
+*                                                                        *
+*  NAME                                                                  *
+*      DSPF_sp_iir -- Single Precision IIR filter                        *
+*                     (used in the VSELP vocoder)                        *
+*                                                                        *
+*   USAGE                                                                *  
+*                                                                        *  
+*    This routine is C callable, and has the following C prototype:      *  
+*                                                                        *  
+*       void DSPF_sp_iir    (float* restrict r1,                         *  
+*                       const float*    x,                               *  
+*                       float* restrict r2,                              *  
+*                       const float*    h2,                              *  
+*                       const float*    h1,                              *  
+*                       int nr                                           *  
+*                      );                                                *  
+*                                                                        *  
+*            r1[nr+4]   :  Delay element values (i/p and o/p)            *  
+*            x[nr]      :  Pointer to the input array                    *  
+*            r2[nr+4]   :  Pointer to the output array                   *  
+*            h2[5]      :  Auto-regressive filter coefficients           *  
+*            h1[5]      :  Moving average filter coefficients            *  
+*            nr         :  Number of output samples                      *  
+*                                                                        *  
+*   DESCRIPTION                                                          *  
+*                                                                        *  
+*     The IIR performs an auto-regressive moving-average (ARMA)          *  
+*     filter with 4 auto-regressive filter coefficients and 5            *  
+*     moving-average filter coefficients for nr output samples.          *  
+*     The output vector is stored in two locations. This routine         *  
+*     is used as a high pass filter in the VSELP vocoder. The            *  
+*     4 values in the r1 vector store the initial values of the          *  
+*     delays.                                                            *  
+*                                                                        *  
+*   C CODE                                                               *  
+*                                                                        *  
+*   This is the C equivalent of the Assembly Code without                *  
+*   restrictions.                                                        *  
+*                                                                        *  
+*   Note that the assembly code is hand optimized and restrictions       *  
+*   may apply.                                                           *  
+*                                                                        *  
+*   void DSPF_sp_iir (float* restrict r1,                                *  
+*         const float*    x,                                             *  
+*         float* restrict r2,                                            *  
+*         const float*    h2,                                            *  
+*         const float*    h1,                                            *  
+*         int nr                                                         *  
+*         )                                                              *  
+*   {                                                                    *  
+*       int i, j;                                                        *  
+*       float sum;                                                       *  
+*                                                                        *  
+*       for (i = 0; i < nr; i++)                                         *  
+*       {                                                                *  
+*          sum = h2[0] * x[4+i];                                         *  
+*          for (j = 1; j <= 4; j++)                                      *  
+*             sum += h2[j] * x[4+i-j] - h1[j] * r1[4+i-j];               *  
+*                                                                        *  
+*          r1[4+i] = sum;                                                *  
+*          r2[i] = r1[4+i];                                              *  
+*       }                                                                *  
+*   }                                                                    *  
+*                                                                        *  
+*   TECHNIQUES                                                           *  
+*                                                                        *  
+*      1. Redundant loads have been eliminated by use of move            *
+*         instructions to update the states.                             *  
+*      2. The inner loop has been completely unrolled.                   *  
+*      3. The coefficients have been kept in registers to minimize       *  
+*         the load operations inside the loop.                           *  
+*                                                                        *  
+*   ASSUMPTIONS                                                          *  
+*                                                                        *  
+*      1. No special alignment requirements.                             *  
+* ---------------------------------------------------------------------- *
+*             Copyright (c) 2003 Texas Instruments, Incorporated.        *
+*                            All Rights Reserved.                        *
+* ====================================================================== *
+
+                .global _DSPF_sp_iir
+
+_DSPF_sp_iir   .cproc  r1, x, r2, h2, h1, nr
+
+                   .reg temp1, temp2, temp3, temp4
+                   .reg temp11, temp21, temp31, sum
+                   .reg h11, h12, h13, h14
+                   .reg h20, h21, h22, h23, h24
+                   .reg sum1, sum2, sum3, sum4
+                   .reg sum5, sum6, sum7, sum8
+                   .reg sum9
+                   .reg xip4
+                   .no_mdep
+                   
+                   LDW *x++, temp1      ; temp1 = x[0]
+                   LDW *x++, temp2      ; temp2 = x[1]
+                   LDW *x++, temp3      ; temp3 = x[2]
+                   LDW *x++, temp4      ; temp4 = x[3]
+    
+                   LDW *r1++, temp11    ; temp11 = r1[0]
+                   LDW *r1++, temp21    ; temp21 = r1[1]
+                   LDW *r1++, temp31    ; temp31 = r1[2]
+                   LDW *r1++, sum       ; sum = r1[3]
+                   
+                   LDW *h1[1], h11      ; load h1[1]
+                   LDW *h1[2], h12      ; load h1[2]
+                   LDW *h1[3], h13      ; load h1[3]
+                   LDW *h1[4], h14      ; load h1[4]
+                   
+                   LDW *h2[0], h20      ; load h2[0]
+                   LDW *h2[1], h21      ; load h2[1]
+                   LDW *h2[2], h22      ; load h2[2]
+                   LDW *h2[3], h23      ; load h2[3]
+                   LDW *h2[4], h24      ; load h2[4]
+                   
+loop:    
+                   MPYSP h11, sum, sum9    ; sum9  = h1[1] * sum
+                   MPYSP h12, temp31, sum8 ; sum8  = h1[2] * temp31;
+                   MPYSP h13, temp21, sum7 ; sum7  = h1[3] * temp21;
+                   MPYSP h14, temp11, sum6 ; sum6  = h1[4] * temp11;
+                   
+                   MPYSP h24, temp1,  sum5 ; sum5  = h2[4] * temp1;
+                   MPYSP h23, temp2,  sum4 ; sum4  = h2[3] * temp2; 
+                   MPYSP h22, temp3,  sum3 ; sum3  = h2[2] * temp3; 
+                   MPYSP h21, temp4,  sum2 ; sum2  = h2[1] * temp4; 
+                   
+                   LDW   *x++, xip4
+                   MPYSP h20, xip4,   sum1 ; sum1  = h2[0] * x[i+4];
+        
+                   MV    temp2, temp1      ; temp1 = temp2;
+                   MV    temp3, temp2      ; temp2 = temp3;
+                   MV    temp4, temp3      ; temp3 = temp4;
+                   MV    xip4,  temp4      ; temp4 = x[i+4];        
+        
+                   MV    temp21, temp11    ; temp11 = temp21;
+                   MV    temp31, temp21    ; temp21 = temp31;
+                   MV    sum,    temp31    ; temp31 = sum;       
+        
+                   ; add up component values
+                   ADDSP sum5, sum4, sum5  
+                   ADDSP sum3, sum2, sum3
+                   ADDSP sum3, sum5, sum3
+                   ADDSP sum3, sum1, sum3
+                   
+                   SUBSP sum3, sum6, sum3
+                   SUBSP sum3, sum7, sum3                   
+                   SUBSP sum3, sum8, sum3                   
+                   SUBSP sum3, sum9, sum
+                   
+                   STW   sum, *r2++        ; r2[i] = sum
+                   STW   sum, *r1++        ; r1[4+i]=sum            
+                   
+                   SUB   nr, 1, nr
+              [nr] B loop
+              
+                   .return     
+
+                .endproc
+
+* ======================================================================== *
+*  End of file: sp_iir.sa                                                  *
+* ------------------------------------------------------------------------ *
+*          Copyright (C) 2003 Texas Instruments, Incorporated.             *
+*                          All Rights Reserved.                            *
+* ======================================================================== *

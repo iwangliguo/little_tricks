@@ -1,0 +1,31 @@
+
+//用于stm32
+
+u8 SOFT_SPI_RW(u8 byte)
+{
+    u8 i,Temp=0;
+
+    SPI1_SCK = 0;
+
+    for(i=0;i<8;i++)     // 循环8次
+   {
+       SPI1_SCK = 1;     //拉高时钟
+       if(byte&0x80)
+        {
+          SPI1_MOSI = 1;  //若最到位为高，则输出高
+        }
+       else      
+        {
+           SPI1_MOSI = 0;   //若最到位为低，则输出低
+         }
+          byte <<= 1;     // 低一位移位到最高位
+          SPI1_SCK = 0;     //拉低时钟
+         Temp <<= 1;     //数据左移
+
+         if(SPI1_MISO)
+           Temp++;     //若从从机接收到高电平，数据自加一
+
+          SPI1_SCK = 1;     //拉高时钟
+       }
+      return (Temp);     //返回数据
+}

@@ -1,0 +1,128 @@
+
+; Example 6 - 18. Residu Implementation Partitioned SA Listing for the TMS320C62x DSP
+
+
+_Residu_psa: .cproc A_a_ptr, B_x_ptr, A_y_ptr, B_lg ;arg_list
+
+	.no_mdep
+	.reg A_a_0 		; coef: a[0]
+	.reg A_x_ba 		; input: x[i+1,i]
+	.reg A_x_98 		; input: x[i每1,i每2]
+	.reg A_x_76 		; input: x[i每3,i每4]
+	.reg A_x_54 		; input: x[i每5,i每6]
+	.reg A_x_32 		; input: x[i每7,i每8]
+	.reg A_x_10 		; input: x[i每9,i每10]
+	.reg A_p00 		; prod: x[i ]*a[0]
+	.reg A_p01 		; prod: x[i每1]*a[1]
+	.reg A_p02 		; prod: x[i每2]*a[2]
+	.reg A_p03 		; prod: x[i每3]*a[3]
+	.reg A_p04 		; prod: x[i每4]*a[4]
+	.reg A_p05 		; prod: x[i每5]*a[5]
+	.reg A_p06 		; prod: x[i每6]*a[6]
+	.reg A_p07 		; prod: x[i每7]*a[7]
+	.reg A_p08 		; prod: x[i每8]*a[8]
+	.reg A_p09 		; prod: x[i每9]*a[9]
+	.reg A_p0a 		; prod: x[i每10]*a[10]
+	.reg A_s0 		; sum0
+	.reg A_y0 		; y0
+
+	.reg B_i 		; outloop counter
+	.reg B_a_0 		; coef: a[0]
+	.reg B_a_10 		; coef: a[1,0]
+	.reg B_a_32 		; coef: a[3,2]
+	.reg B_a_54 		; coef: a[5,4]
+	.reg B_a_76 		; coef: a[7,6]
+	.reg B_a_98 		; coef: a[9,8]
+	.reg B_a_ba 		; coef: a[11,10]
+	.reg B_p10 		; prod: x[i+1]*a[0]
+	.reg B_p11 		; prod: x[i ]*a[1]
+	.reg B_p12 		; prod: x[i每1]*a[2]
+	.reg B_p13 		; prod: x[i每2]*a[3]
+	.reg B_p14 		; prod: x[i每3]*a[4]
+	.reg B_p15		; prod: x[i每4]*a[5]
+	.reg B_p16 		; prod: x[i每5]*a[6]
+	.reg B_p17 		; prod: x[i每6]*a[7]
+	.reg B_p18 		; prod: x[i每7]*a[8]
+	.reg B_p19 		; prod: x[i每8]*a[9]
+	.reg B_p1a 		; prod: x[i每9]*a[10]
+	.reg B_s1 		; sum1
+	.reg B_y1 		; y1
+
+	LDW .D1T2 *A_a_ptr++,B_a_10 	; load a[1] & a[0], a[0] = 4096
+	LDW .D1T2 *A_a_ptr++,B_a_32 	; load a[3] & a[2]
+	LDW .D1T2 *A_a_ptr++,B_a_54 	; load a[5] & a[4]
+	LDW .D1T2 *A_a_ptr++,B_a_76 	; load a[7] & a[6]
+	LDW .D1T2 *A_a_ptr++,B_a_98 	; load a[9] & a[8]
+	LDH .D1T2 *A_a_ptr,B_a_ba 	; load a[11] & a[10]
+	SHR .2 B_lg,1,B_i 		; outloop loop counter, lg/2
+	MVK .1 4096,A_a_0 		; a[0] = 4096
+	MVK .2 4096,B_a_0 		; a[0] = 4096
+
+LOOP:
+	LDW .D2T1 *B_x_ptr每每,A_x_ba 	; load x[ 1] & x[ 0]
+	LDW .D2T1 *B_x_ptr每每,A_x_98 	; load x[每1] & x[每2]
+	LDW .D2T1 *B_x_ptr每每,A_x_76 	; load x[每3] & x[每4]
+	LDW .D2T1 *B_x_ptr每每,A_x_54 	; load x[每5] & x[每6]
+	LDW .D2T1 *B_x_ptr每每,A_x_32 	; load x[每7] & x[每8]
+	LDW .D2T1 *B_x_ptr++[6],A_x_10	; load x[每9] & x[每10]
+	SMPY .1 A_x_ba,A_a_0,A_p00 	; smpy(x[i ],a[0])
+	SMPYH .1X A_x_98,B_a_10,A_p01 	; smpy(x[i每1],a[1])
+	SMPY .1X A_x_98,B_a_32,A_p02 	; smpy(x[i每2],a[2])
+	SMPYH .1X A_x_76,B_a_32,A_p03 	; smpy(x[i每3],a[3])
+	SMPY .1X A_x_76,B_a_54,A_p04 	; smpy(x[i每4],a[4])
+	SMPYH .1X A_x_54,B_a_54,A_p05 	; smpy(x[i每5],a[5])
+	SMPY .1X A_x_54,B_a_76,A_p06 	; smpy(x[i每6],a[6])
+	SMPYH .1X A_x_32,B_a_76,A_p07 	; smpy(x[i每7],a[7])
+	SMPY .1X A_x_32,B_a_98,A_p08 	; smpy(x[i每8],a[8])
+	SMPYH .1X A_x_10,B_a_98,A_p09 	; smpy(x[i每9],a[9])
+	SMPY .1X A_x_10,B_a_ba,A_p0a 	; smpy(x[i每10],a[10])
+	SMPYLH .2X B_a_10,A_x_ba,B_p10 ; smpy(x[i+1],a[0])
+	SMPYHL .2X B_a_10,A_x_ba,B_p11 ; smpy(x[i ],a[1])
+	SMPYLH .2X B_a_32,A_x_98,B_p12 ; smpy(x[i每1],a[2])
+	SMPYHL .2X B_a_32,A_x_98,B_p13 ; smpy(x[i每2],a[3])
+	SMPYLH .2X B_a_54,A_x_76,B_p14 ; smpy(x[i每3],a[4])
+	SMPYHL .2X B_a_54,A_x_76,B_p15 ; smpy(x[i每4],a[5])
+	SMPYLH .2X B_a_76,A_x_54,B_p16 ; smpy(x[i每5],a[6])
+	SMPYHL .2X B_a_76,A_x_54,B_p17 ; smpy(x[i每6],a[7])
+	SMPYLH .2X B_a_98,A_x_32,B_p18 ; smpy(x[i每7],a[8])
+	SMPYHL .2X B_a_98,A_x_32,B_p19 ; smpy(x[i每8],a[9])
+	SMPYLH .2X B_a_ba,A_x_10,B_p1a ; smpy(x[i每9],a[10])
+	SADD .1 A_p00,A_p01,A_s0	; s0 = sadd(smpy(x[每1], a[0]),
+					; smpy(x[每1], a[1]))
+	SADD .1 A_s0,A_p02,A_s0 ; s0 = sadd(s0,smpy(x[每2],a[2]))
+	SADD .1 A_s0,A_p03,A_s0 ; s0 = sadd(s0,smpy(x[每3],a[3]))
+	SADD .1 A_s0,A_p04,A_s0 ; s0 = sadd(s0,smpy(x[每4],a[4]))
+	SADD .1 A_s0,A_p05,A_s0 ; s0 = sadd(s0,smpy(x[每5],a[5]))
+	SADD .1 A_s0,A_p06,A_s0 ; s0 = sadd(s0,smpy(x[每6],a[6]))
+	SADD .1 A_s0,A_p07,A_s0 ; s0 = sadd(s0,smpy(x[每7],a[7]))
+	SADD .1 A_s0,A_p08,A_s0 ; s0 = sadd(s0,smpy(x[每8],a[8]))
+	SADD .1 A_s0,A_p09,A_s0 ; s0 = sadd(s0,smpy(x[每9],a[9]))
+	SADD .1 A_s0,A_p0a,A_s0 ; s0 = sadd(s0,smpy(x[每10],a[10]))
+
+	SADD .2 B_p10,B_p11,B_s1 	; s1 = sadd(smpy(x[1],a[0]),
+					; smpy(x[0],a[1]))
+	SADD .2 B_s1,B_p12,B_s1 	; s1 = sadd(s1,smpy(x[每1],a[2]))
+	SADD .2 B_s1,B_p13,B_s1 	; s1 = sadd(s1,smpy(x[每2],a[3]))
+	SADD .2 B_s1,B_p14,B_s1 	; s1 = sadd(s1,smpy(x[每3],a[4]))
+	SADD .2 B_s1,B_p15,B_s1 	; s1 = sadd(s1,smpy(x[每4],a[5]))
+	SADD .2 B_s1,B_p16,B_s1 	; s1 = sadd(s1,smpy(x[每5],a[6]))
+	SADD .2 B_s1,B_p17,B_s1 	; s1 = sadd(s1,smpy(x[每6],a[7]))
+	SADD .2 B_s1,B_p18,B_s1 	; s1 = sadd(s1,smpy(x[每7],a[8]))
+	SADD .2 B_s1,B_p19,B_s1 	; s1 = sadd(s1,smpy(x[每8],a[9]))
+	SADD .2 B_s1,B_p1a,B_s1 	; s1 = sadd(s1,smpy(x[每9],a[10]))
+	MVk .1 4096,A_a_0 		; a[0] = 4096
+	SADD .1 A_s0,A_a_0,A_y0 	; s0 = sadd(s0,4096)
+	SADD .2 B_s1,B_a_0,B_y1 	; s1 = sadd(s1,4096)
+	SSHL .1 A_y0,3,A_y0 		; s0 = L_shl(s0,3)
+	SSHL .2 B_y1,3,B_y1 		; s1 = L_shl(s1,3)
+	SHR .1 A_y0,16,A_y0 		; y[0] = shr(s0,16)
+	SHR .2 B_y1,16,B_y1 		; y[1] = shr(s1,16)
+	STH .1 A_y0,*A_y_ptr++ 		; store y[0]
+	STH .D1T2 B_y1,*A_y_ptr++ 	; store y[1]
+
+[B_i]	SUB .2 B_i,1,B_i 		; decrement loop counter
+[B_i]	B LOOP 				; branch to the loop
+	.endproc
+	
+	
+	

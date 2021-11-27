@@ -1,0 +1,18 @@
+
+; Example 4 - 15. Biquad IIR Filter SA Listing Functions for the TMS320C62x DSP
+
+
+; 反馈部分
+MPY		a12, dn_2, mult1
+MPY		a11, dn_1, mult2
+ADD		mult1,	mult2, dn
+SHR		dn, 15, dn
+
+; 前馈部分
+MPY		b12, dn_2, mult3
+MPY		b11, dn_1, mult4
+MPY		b10, dn, mult5
+ADD		mult3,	mult4, sum
+ADD		mult5,	sum, sum
+SHR		sum, 15, yout
+

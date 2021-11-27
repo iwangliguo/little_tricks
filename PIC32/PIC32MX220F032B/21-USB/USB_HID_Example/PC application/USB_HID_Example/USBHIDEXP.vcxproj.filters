@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\MFC">
+      <UniqueIdentifier>{f70570e1-15b8-46ee-a88b-9e3872a25276}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files\MFC">
+      <UniqueIdentifier>{03140374-2bab-4a65-8816-05191e471e8f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\USB_HID">
+      <UniqueIdentifier>{4f2cadab-8651-4eb5-a0f3-912e13c7c9de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\USB_HID">
+      <UniqueIdentifier>{afa8d2c1-5171-488f-928e-b99127984c71}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files\MFC</Filter>
+    </ClCompile>
+    <ClCompile Include="USB_HID.cpp">
+      <Filter>Source Files\USB_HID</Filter>
+    </ClCompile>
+    <ClCompile Include="USB_HID_Example.cpp">
+      <Filter>Source Files\USB_HID</Filter>
+    </ClCompile>
+    <ClCompile Include="USBHIDEXP.cpp">
+      <Filter>Source Files\MFC</Filter>
+    </ClCompile>
+    <ClCompile Include="USBHIDEXPDlg.cpp">
+      <Filter>Source Files\MFC</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Resource.h">
+      <Filter>Header Files\MFC</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files\MFC</Filter>
+    </ClInclude>
+    <ClInclude Include="USB_HID.h">
+      <Filter>Header Files\USB_HID</Filter>
+    </ClInclude>
+    <ClInclude Include="USB_HID_Example.h">
+      <Filter>Header Files\USB_HID</Filter>
+    </ClInclude>
+    <ClInclude Include="USBHIDEXP.h">
+      <Filter>Header Files\MFC</Filter>
+    </ClInclude>
+    <ClInclude Include="USBHIDEXPDlg.h">
+      <Filter>Header Files\MFC</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\icon1.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\USBHIDEXP.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="res\USBHIDEXP.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\USBHIDEXP.rc2">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="USBHIDEXP.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,32 @@
+//对整个字的操作：举例
+x= (0x1)|(0xe<<2)|(0x2<<6)|(13<<7)|(1<<31);//前提是x已经清零
+
+指定位和位组的操作
+if(x&(1<<10))
+{	
+	/*  为1*/
+}
+else
+{	
+	
+}
+
+
+//判断奇数偶数   按位与1
+
+ 
+
+
+//异或  实现加法
+int bitAdd(int a,int b)
+{
+    if(b==0)
+    return a;
+    int sum = a^b;
+    int carry =(a&b)<<1;
+    return bitAdd(sum,carry);
+}
+
+//异或 交换两个数据的值
+
+#include<std>

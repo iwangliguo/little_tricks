@@ -1,0 +1,48 @@
+
+;Example 2 - 14. Single-Precision Floating-Point Square Root SA Listing for sqrtf
+
+
+;==============================================================
+; Copyright 1998 by Texas Instruments Inc. All rights reserved.
+; SQRSP.sa Syd Poland 05-01-98 for TMS320C67xx DSPs
+; a4 = a4
+; ans = Square Root (arg1) SP FP Square Root Subroutine
+
+;==============================================================
+
+	.text			; program memory
+	.global _SQRSP, _sqrtf	; entry labels
+	.align 32		; fetch packet boundary
+
+
+_sqrtf				; entry in rts6701 library
+_SQRSP .cproc arg1		; entry to SP FP square root function 	
+
+	; declare the input arguments
+	.reg Vd2, ans, xn, K15, tmp, exp1
+
+	clr	arg1, 31, 31, arg1		; force sign bit to +
+	zero	Vd2				; Vd2 = 0
+
+	rsqrsp	arg1, xn			; x1 = square root (1/arg1) [8- bits]
+	extu	arg1, 1, 24, exp1		; get exponent 1 field = 0 ?
+  [exp1]set	Vd2, 23, 23, Vd2		; Vd2 = 1 in exponent field if exp1 > 0
+	sub	arg1, Vd2, Vd2			; Vd2 = arg1/2
+	mpysp	Vd2, xn, tmp			; tmp = (arg1/2)*x1
+
+	zero	K15				; K15 = 0
+	set	K15, 22, 29, K15		; K15 = 1.5 in SP FP (0x3fc0_0000)
+	mpysp	xn, tmp, tmp		; tmp=[(arg1/2)*x1]* 1
+	subsp	K15, tmp, tmp		; tmp=1.5-[(arg1/2)*x1]*x1
+
+	mpysp	xn, tmp, xn		; x2=x1*{1.5-(arg1/2)*(x1*x1)}
+	mpysp	Vd2, xn, tmp		; tmp = (arg1/2) * x2
+	mpysp	xn, tmp, tmp		; tmp = [(arg1/2)*x1] * x1
+	subsp	K15, tmp, tmp		; tmp = 1.5 - [(arg1/2)*x1] * x1
+
+	mpysp	xn, tmp, xn		; x3 = x2*{1.5-(arg1/2)*(x1*x1)}
+  [exp1]mpysp	arg1, xn, ans		; ans = arg1 * x3 if exp1 > 0
+ [!exp1]zero	ans					; ans = 0 if exp1 = 0
+
+	.return ans
+	.endproc

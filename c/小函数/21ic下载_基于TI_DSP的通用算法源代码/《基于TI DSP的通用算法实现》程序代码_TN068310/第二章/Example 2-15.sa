@@ -1,0 +1,55 @@
+
+;Example 2 - 15. Double-Precision Floating-Point Square Root SA Listing for sqrt
+
+;================================================================
+; Copyright 1998 by Texas Instruments Inc. All rights reserved.
+; SQRDP.sa Syd Poland 06-24-98 for TMS320C67xx DSPs
+; a5:a4 = a5:a4
+; ans = Square Root (arg1) DP FP Square Root Subroutine
+;================================================================
+
+	.text			; program memory
+	.global _SQRDP, _sqrt	; entry labels
+	.align	32		; fetch packet boundary
+
+_sqrt					; entry in rts6701 library
+_SQRDP .cproc arg1H:arg1L		; entry to DP FP square root function
+					; declare the input arguments
+
+	.reg VH:VL, ansH:ansL, xH:xL, KH:KL, tH:tL, exp1
+			
+	clr	arg1H, 31, 31, arg1H	; force sign bit to +
+	zero	VH			; V = 0
+
+	extu	arg1H, 1, 21, exp1		; exp1 = 0 ?
+	rsqrdp	arg1H:arg1L, xH:xL		; x1 = TLU (1/arg1) [8-bits]
+	extu	arg1H, 1, 21, exp1		; get exponent 1 field
+  [exp1]set	VH,20,20,VH				; V = 1 in exponent field
+	sub	arg1H,VH,VH				; V = arg1 / 2 if exp1 > 0
+
+	mv	arg1L,VL
+	mpydp	VH:VL, xH:xL, tH:tL		; t = (arg1/2) * x1
+
+	zero	KH ; K = 0
+	zero	KL
+	set	KH,19,29,KH			; 1.5 in DP FP (0x3ff8_0000)
+	mpydp	xH:xL, tH:tL, tH:tL		; t = [(arg1/2)*x1] * x1
+	subdp	KH:KL, tH:tL, tH:tL		; t = 1.5-[(arg1/2)*x1]*x1
+
+	mpydp	xH:xL, tH:tL, xH:xL 		; x2=x1*{1.5-(arg1/2)*(x1*x1)}
+	mpydp	VH:VL, xH:xL, tH:tL		; t = (arg1/2) * x2
+	mpydp	xH:xL, tH:tL, tH:tL		; t = [(arg1/2)*x2] * x2
+	subdp	KH:KL, tH:tL, tH:tL		; t = 1.5-[(arg1/2)*x2]*x2
+
+	mpydp	xH:xL, tH:tL, xH:xL		; x3=x2*{1.5-(arg1/2)*(x2*x2)}
+	mpydp	VH:VL, xH:xL, tH:tL		; t = (arg1/2) * x3
+	mpydp	xH:xL, tH:tL, tH:tL		; t = [(arg1/2)*x3] * x3
+
+	subdp	KH:KL, tH:tL, tH:tL		; t = 1.5-[(arg1/2)*x3]*x3
+	mpydp	xH:xL, tH:tL, xH:xL		; x4=x3*{1.5-(arg1/2)*(x3*x3)}
+  [exp1]mpydp	arg1H:arg1L, xH:xL, ansH:ansL	; ans=arg1*x3 (exp1>0)
+ [!exp1]zero	ansH				; ans = 0 if exp1 = 0
+ [!exp1	zeroansL
+
+	.return ansH:ansL
+	.endproc

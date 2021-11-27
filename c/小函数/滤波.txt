@@ -1,0 +1,124 @@
+(1)算术平均滤波程序，调用读取数据子函数get_ad()。
+#define  N  12
+/********************************
+函数名称: uchar filter()
+功能 ：算术平均滤波程序
+入口参数：采样数组x[]  , 采样点数
+返回值 ：sum/N
+********************************/
+float filter()
+{
+    float sum = 0;
+	int count = 0;
+    for (count=0; count<N; count++)
+    {
+        sum + = x[count];
+        //delay ();        //调用延时子程序
+    }
+    return  (sum/N);
+}
+(2) 程序判断滤波程序，调用读取数据子程序get_ad()。
+#define  A  10
+float  value;     //有效值
+/********************************
+函数名称: char filter ()
+功能 ：限幅滤波程序
+说明 ：A值可根据实际情况调整，value为有效值，new_value为当前采样值，滤波程序返回有效的
+实际值
+入口参数：无
+返回值 ：value or new_value
+********************************/
+float filter ()
+{
+    float new_value;
+    new_value = get_ad();
+    if ((new_value - value > A ) || ( value - new_value > A )
+    return( value);
+    return (new_value);
+}
+(3) 滑动平均滤波法C语言程序, 调用读取数据子程序get_ad()。
+#define  N  12
+float  value_buf[N];
+int  i=0;
+/********************************
+函数名称: float filter ()
+功能 ：滑动平均滤波法C语言程序
+入口参数：无
+返回值 ：sum/N
+********************************/
+float filter()
+{
+    int count;
+    int sum=0;
+    value_buf[i++] = get_ad();
+    if ( i == N )
+         i = 0;
+    for ( count=0;count<N;count++)
+       sum += value_buf[count];
+    return (sum/N);
+}
+(4)中值平均滤波法C语言程序，调用读取数据子函数get_ad()。
+#define   N   12
+/********************************
+函数名称: float filter ()
+功能 ：中值平均滤波法C语言程序
+入口参数：无
+返回值 ：sum/(N-2)
+********************************/
+float filter()
+{
+    int count,i,j;
+    float value_buf[N];
+    float sum=0;       
+    for (count=0;count<N;count++)
+    {
+        value_buf[count] = get_ad();
+        //delay();
+    }
+    for (j=0;j<N-1;j++)
+    {
+        for (i=0;i<N-j;i++)
+        {
+            if ( value_buf>value_buf[i+1] )
+            {
+                temp = value_buf;
+                value_buf = value_buf[i+1];
+                value_buf[i+1] = temp;
+            }
+        }
+    }
+    for(count=1;count<N-1;count++)
+    sum += value[count];
+    return (sum/(N-2));
+}
+(5)中位值滤波法，N值可根据实际情况调整，排序采用冒泡法。
+#define   N  11
+/********************************
+函数名称: float filter ()
+功能 ：中位值滤波法C语言程序
+入口参数：无
+返回值 ：value_buf（(N-1)/2）
+********************************/
+float filter()
+{
+    float value_buf[N];        // 定义数据类型
+    int count,i,j,temp;
+    for ( count=0;count<N;count++)
+    {
+        value_buf[count] = get_ad();
+        //delay();        //调用延时子程序
+    }
+    for (j=0;j<N-1;j++)
+    {
+        for (i=0;i<N-j;i++)
+        {
+            if ( value_buf[i]>value_buf[i+1] )
+            {
+                temp = value_buf[i];
+                value_buf[i] = value_buf[i+1];
+                value_buf[i+1] = temp;
+            }
+        }
+    }
+    return value_buf[(N-1)/2];
+}

@@ -1,0 +1,20 @@
+#include<stdio.h>
+
+int main()
+{
+    int i, j;
+    int m = 0;
+    int s;
+    printf("请输入两个数字：\n");
+    scanf("%d %d", &i, &j);
+    m = i < j ? i : j;
+    for (s = m; s >= 1; s--) {
+        if (i%s == 0 && j%s == 0)
+        {
+            printf("最大公约数=%d\n",s);
+            printf("最小公倍数=%d\n",i*j/s);
+            break;
+        }
+    }
+    return 0;
+}

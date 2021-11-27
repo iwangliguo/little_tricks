@@ -1,0 +1,26 @@
+
+; Example 3 - 47. Butterfly Unit of Complex Float Point Radix-2 FFT SA Listing for the TMS320C67x DSP
+
+Butterfly:
+     LDDW   *A_x++, A_x2mp1:A_x2m	; load x[2m+1]:x[2m]
+
+	 MPYSP	 A_x2m, B_c, A_p1	    ; p1=c*x[2m]
+	 MPYSP	 A_x2m, B_s, B_p4		; p4=s*x[2m]
+	 MPYSP	 A_x2mp1, B_s, A_p2		; p2=s*x[2m+1]
+	 MPYSP	 A_x2mp1, B_c, A_p3		; p3=c*x[2m+1]
+
+	 ADDSP	 A_p1, A_p2, A_rtemp		; rtemp=p1+p2
+	 SUBSP	 A_p3, B_p4, B_itemp		; itemp=p3-p4
+
+	 LDDW	 *B_x++, B_x2iap1:B_x2ia		; load x[2ia+1]:x[2ia]
+	        
+ 	 SUBSP	 B_x2ia, A_rtemp, A_x2ms		; x[2m]=x[2ia]-rtemp
+	 ADDSP	 B_x2ia, A_rtemp, A_x2ias		; x[2ia]=x[2ia]+rtemp
+	 SUBSP	 B_x2iap1, B_itemp, B_x2mp1s	; x[2m+1]=x[2ia+1]-itemp 
+	 ADDSP	 B_x2iap1, B_itemp, B_x2iap1s	; x[2ia+1]=x[2ia+1]+itemp
+	
+	 STW 	 A_x2ms, *A_xs++	      			; perform all stores
+	 STW 	 A_x2ias, *B_xs++
+     STW	 B_x2mp1s, *A_xs++
+	 STW	 B_x2iap1s, *B_xs++
+End_Butterfly

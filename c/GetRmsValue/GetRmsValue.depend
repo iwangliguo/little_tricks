@@ -1,0 +1,6 @@
+# depslib dependency file v1.0
+1563240295 source:c:\users\administrator\desktop\c\getrmsvalue\main.c
+	<stdio.h>
+	<stdlib.h>
+	<math.h>
+

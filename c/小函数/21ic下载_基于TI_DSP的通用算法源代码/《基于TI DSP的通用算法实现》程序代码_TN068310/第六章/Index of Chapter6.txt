@@ -1,0 +1,27 @@
+Example 6 - 1. LMS Implementation C Listing	
+Example 6 - 2. NLMS Implementation C Listing	
+Example 6 - 3. LLMS Implementation C Listing	
+Example 6 - 4. SELMS Implementation C Listing	
+Example 6 - 5. SDLMS Implementation C Listing	
+Example 6 - 6. SSLMS Implementation C Listing	
+Example 6 - 7. LMS Implementation ASM Listing for the TMS320C2x DSP	
+Example 6 - 8. NLMS Implementation ASM Listing for the TMS320C2x DSP	
+Example 6 - 9. LLMS Implementation ASM Listing for the TMS320C2x DSP	
+Example 6 - 10. SELMS Implementation ASM Listing for the TMS320C2x DSP	
+Example 6 - 11. SSLMS Implementation ASM Listing for the TMS320C2x DSP	
+Example 6 - 12. DLMS Implementation ASM Listing for the TMS320C54x DSP	
+Example 6 - 13. DLMS Implementation ASM Listing for the TMS320C55x DSP	
+Example 6 - 14. LMS Implementation C Listing Using Intrinsics for the TMS320C62x DSP	
+Example 6 - 15. DLMS Implementation ASM Listing for the TMS320C62x DSP	
+Example 6 - 16. Residu Implementation C Listing Using Intrisics for the  TMS320C62x DSP	
+Example 6 - 17. Residu Implementation Optimized C Listing for the TMS320C62x  DSP	
+Example 6 - 18. Residu Implementation Partitioned SA Listing for the TMS320C62x  DSP	
+Example 6 - 19. LMS Implementation C Listing Using Intrinsics for the TMS320C64x DSP	
+Example 6 - 20. LMS Implementation SA Listing for the TMS320C64x DSP	
+Example 6 - 21. LMS Implementation ASM Listing for the TMS320C3x DSP	
+Example 6 - 22. NLMS Implementation ASM Listing for the TMS320C3x DSP	
+Example 6 - 23. LLMS Implementation ASM Listing for the TMS320C3x DSP	
+Example 6 - 24. SELMS Implementation ASM Listing for the TMS320C3x DSP	
+Example 6 - 25. SSLMS Implementation ASM Listing for the TMS320C3x DSP	
+Example 6 - 26. LMS Implementation ASM Listing for the TMS320C67x DSP	
+
