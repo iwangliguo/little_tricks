@@ -1,0 +1,25 @@
+`timescale 1ns / 1ps
+
+module tb_unsigned_mul1();
+
+parameter DATAWIDTH=8;
+reg clk;
+
+reg   [DATAWIDTH-1:0] Ain,Bin;
+
+wire   [DATAWIDTH*2-1:0] result;
+initial
+	begin
+		Ain = 5;
+		Bin = 3;
+		clk = 0;
+	end
+always #5 clk = ~clk;
+always @(posedge clk)
+	begin
+		#110
+		Ain = Ain+2;
+		Bin = Bin+1;
+	end
+unsigned_mul_1 #(.DATAWIDTH( DATAWIDTH)) u1(clk,Ain,Bin,result);
+endmodule
