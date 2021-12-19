@@ -1,3 +1,4 @@
+//https://zhuanlan.zhihu.com/p/142377567
 always @ (posedge clk, negedge rst_async_n)
     if (!rst_async_n) begin
         rst_s1 <= 1'b0;
